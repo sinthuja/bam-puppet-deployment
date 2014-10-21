@@ -1,0 +1,237 @@
+#!/bin/bash
+ 
+# SVN Installer.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+# http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# Exit on fail
+set -e
+
+# General commands
+MV=`which mv` && : || (echo "Command 'mv' is not installed."; exit 10;)
+CP=`which cp` && : || (echo "Command 'cp' is not installed."; exit 10;)
+ID=`which id` && : || (echo "Command 'id' is not installed."; exit 10;)
+CAT=`which cat` && : || (echo "Command 'cat' is not installed."; exit 10;)
+CUT=`which cut` && : || (echo "Command 'cut' is not installed."; exit 10;)
+AWK=`which awk` && : || (echo "Command 'awk' is not installed."; exit 10;)
+SED=`which sed` && : || (echo "Command 'sed' is not installed."; exit 10;)
+WGET=`which wget` && : || (echo "Command 'wget' is not installed."; exit 10;)
+DATE=`which date` && : || (echo "Command 'date' is not installed."; exit 10;)
+ECHO=`which echo` && : || (echo "Command 'echo' is not installed."; exit 10;)
+UNAME=`which uname` && : || (echo "Command 'uname' is not installed."; exit 10;)
+HOSTNAME=`which hostname` && : || (echo "Command 'hostname' is not installed."; exit 10;)
+
+# Parameters 
+VERBOSE=0
+FORCEYES=0
+OSDIST=""
+
+# Execute bashtrap function when user press [Ctrl]+[c]
+trap bashtrap INT
+
+function print_usage(){
+    ${ECHO} -e "Installing SVN"
+    ${ECHO} -e " You can use below options when trying to run this script;"
+    ${ECHO} -e "    -v Verbose Installation"
+    ${ECHO} -e "    -y Force confirmation to the installation"
+    ${ECHO} -e "    -h Ror the help content"
+
+}
+
+function print_message(){
+    if [ ${VERBOSE} -eq 1 ]; then
+        ${ECHO} -en $1
+    fi    
+}
+
+function print_ok(){
+    if [ ${VERBOSE} -eq 1 ]; then
+        ${ECHO} -e " [Done]"       
+    fi
+}
+
+function print_error(){
+    if [ ${VERBOSE} -eq 1 ]; then
+        ${ECHO} -e " [Error]\n"$1
+    else
+        ${ECHO} -e "[Error]" $1
+    fi
+    exit 1
+}
+
+function get_distro(){
+# Check for distribution
+    print_message "Checking for the distribution ... "
+    if [ -f /etc/debian_version ]; then
+        OSDIST="Debian"
+        print_ok
+    elif [ -f /etc/redhat-release ]; then
+        OSDIST="RedHat"
+        print_ok
+    elif [ -f /etc/SuSE-release ]; then
+        OSDIST="SUSE"
+        print_ok
+    else
+        OSDIST="unknown"
+        print_ok
+    fi
+}
+
+function check_user(){
+# Check for root
+    print_message "Checking for user permission ... "
+    if [ `${ID} -u` != 0 ] ; then
+        print_error "Need root access.\nRun the script as 'root' or with 'sudo' permissions. "
+    else
+        print_ok
+    fi
+}
+
+function check_for_svn(){
+# Checking for svn 
+    print_message "Checking for previouse SVN  installations ... "    
+    if [[ -n $(which svn) ]]; then
+        print_error "SVN exist on this system."
+    else
+        print_ok
+    fi
+}
+
+function get_confirmation(){
+# Get user confirmation    
+    ${ECHO} -e "SVN Installer"
+    ${ECHO} -e "Please press eniter to continue the SVN installation;"
+    ${ECHO} -e "Please press [Ctrl + C] cancel the installation"
+
+    if [ ${FORCEYES} -eq 0 ]; then
+        read input
+    fi
+
+    if [ ${VERBOSE} -eq 0 ]; then
+        ${ECHO} -e "Installation started. Please wait ... "
+    fi    
+}
+
+bashtrap(){
+    print_error "\n[Ctrl] + [c] detected ... \nScript will exit now."
+}
+
+function install_on_ubuntu(){
+# Install svn  on a Ubuntu/Debian system
+#Ubuntu/Debian specific commands.
+    BC=`which bc` && : || (echo "Command 'bc' is not installed."; exit 10;)
+    GREP=`which grep` && : || (echo "Command 'grep' is not installed."; exit 10;)
+    APT=`which apt-get` && : || (echo "Command 'apt-get' is not installed."; exit 10;)
+    NTPDEBIAN=`which ntpdate-debian` && : || (echo "Command 'ntpdate-debian' is not installed."; exit 10;)
+    DPKG=`which dpkg` && : || (echo "Command 'dpkg' is not installed."; exit 10;)
+    DPKGRECONF=`which dpkg-reconfigure` && : || (echo "Command 'dpkg-reconfigure' is not installed."; exit 10;)
+
+
+# Update repository list
+    print_message "Updating system repository list ... "
+    if [ ${VERBOSE} -eq 1 ]; then
+        ${APT} update && print_ok || print_error "Failed to update repository lists."
+    else 
+        ${APT} update -q=2 && : || print_error "Failed to update repository lists."
+    fi
+
+# Install svn 
+        print_message "Installing svn ... "
+        ${APT} install subversion && print_ok || print_error "Failed to install svn."
+        print_message "Finished installation successfully "
+}
+
+function install_on_redhat(){
+# Install svn on redhat base systems
+    YUM=`which yum` && : || (echo "Command 'yum' is not installed."; exit 10;)
+    RPM=`which rpm` && : || (echo "Command 'rpm' is not installed."; exit 10;)
+    EL_VERSION=$( ${UNAME} -r | ${AWK} -F "el" '{print $2}' | ${AWK} -F "." '{print $1}') 
+
+# Install svn master
+        print_message "Installing subversion ... "
+        ${YUM} install subversion -q -y && print_ok || print_error "Failed to install svn"
+        print_message "Finished installing SVN successfully "
+
+}
+
+function install_on_sles(){
+# Install svn on SLES base systems
+    ZYPPER=`which zypper` && : || (echo "Command 'zypper' is not installed."; exit 10;)
+    RPM=`which rpm` && : || (echo "Command 'rpm' is not installed."; exit 10;)
+
+# Install svn
+        print_message "Installing svn ... "
+        ${ZYPPER} install subversion && print_ok || print_error "Failed to install svn."
+         print_message "Finished installing SVN successfully "
+}
+
+
+# Check all input parameters.
+while getopts ":vhmd:n:s:t:y --help" opt; do
+    case ${opt} in
+        h|--help)
+            print_usage
+            exit 0
+            ;;
+        v) 
+            VERBOSE=1
+            ;;
+        y)
+            FORCEYES=1
+            ;;
+        :) 
+            ${ECHO} -e "svninstall: Option -${OPTARG} requires an argument."
+            ${ECHO} -e "svninstall: '--help or -h' gives usage information."
+            exit 1
+            ;;
+         \?)
+            ${ECHO} -e "svninstall: Invalid option: -${OPTARG}"
+            ${ECHO} -e "svninstall: '--help or -h' gives usage information."
+            exit 1
+            ;;
+    esac
+done
+
+# Validate the user
+check_user
+
+if [ -z ${TIMEZONE} ]; then
+    TIMEZONE="Etc/UTC"
+fi
+
+check_for_svn
+# Get the operating system distribution
+get_distro
+get_confirmation
+
+case ${OSDIST} in
+    Debian)
+        install_on_ubuntu
+        ;;
+    RedHat)
+        install_on_redhat
+        ;;
+    SUSE)
+        install_on_sles
+        ;;
+    Fedora)
+        print_error "Fedora is not recommended. Try to use CentOS."
+        ;;
+    *)
+        print_error "System was not identified."
+        ;;
+esac
+
+
+exit 0

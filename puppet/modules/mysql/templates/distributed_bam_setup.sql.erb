@@ -1,0 +1,19 @@
+create database if not exists <%= gov_registry_db %>;
+use  <%= gov_registry_db %>;
+source /opt/sql/scripts/mysql.sql;
+
+create database if not exists <%= conf_registry_db %>;
+use <%= conf_registry_db %>;
+source /opt/sql/scripts/mysql.sql;
+
+create database if not exists <%= userstore_db %>;
+use <%= userstore_db %>;
+source /opt/sql/scripts/mysql.sql;
+
+create database if not exists <%= metastore_db %>;
+
+create database if not exists <%= summary_db %>;
+
+
+
+

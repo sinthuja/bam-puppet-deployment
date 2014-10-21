@@ -1,0 +1,110 @@
+<datasources-configuration xmlns:svns="http://org.wso2.securevault/configuration">
+
+	<providers>
+		<provider>org.wso2.carbon.ndatasource.rdbms.RDBMSDataSourceReader</provider>
+                <provider>org.wso2.carbon.bam.cassandra.hector.datareader.HectorBasedCassandraDataSourceReader</provider>
+	</providers>
+
+	<datasources>		
+
+		<datasource>
+			<name>WSO2BAM_DATASOURCE</name>
+			<description>The datasource used for analyzer data</description>
+			<definition type="RDBMS">
+				<configuration>
+					<url><%= summary_database_url %></url>
+					<username><%= summary_user %></username>
+					<password><%= summary_password %></password>
+					<driverClassName><%= summary_database_driver  %></driverClassName>
+					<maxActive><%= max_active %></maxActive>
+					<maxWait><%= max_wait %></maxWait>
+					<testOnBorrow>true</testOnBorrow>
+					<validationQuery>SELECT 1</validationQuery>
+					<validationInterval>30000</validationInterval>
+				</configuration>
+			</definition>
+		</datasource>
+
+		<datasource>
+			<name>WSO2BAM_CASSANDRA_DATASOURCE</name>
+			<description>The datasource used for Cassandra data</description>
+			<definition type="RDBMS">
+				<configuration>
+					<hosts><%= css1_domain %>,<%= css2_domain %>,<%= css3_domain %>,<%= css4_domain %></hosts>
+                                        <port>9160</port>
+                                        <keySpace>EVENT_KS</keySpace>
+					<username><%= cassandra_username %></username>
+					<password><%= cassandra_password %></password>
+                                        <externalCassandra>true</externalCassandra>
+                                        <replicationFactor><%= css_replication_factor %></replicationFactor>
+                                        <strategyClass><%= strategy_class  %></strategyClass>
+                                        <readConsistencyLevel><%= read_consistency_level %></readConsistencyLevel>
+                                        <writeConsistencyLevel><%= write_consistency_level %></writeConsistencyLevel>
+					<gcGraceInterval><%= gc_grace_interval %></gcGraceInterval>
+				</configuration>
+			</definition>
+		</datasource>
+
+                <datasource>
+                        <name>WSO2BAM_CASSANDRA_EVENT_INDEX_SOURCE</name>
+                        <description>The datasource used for Cassandra data</description>
+                        <definition type="RDBMS">
+                                <configuration>
+                                        <hosts><%= css1_domain %>,<%= css2_domain %>,<%= css3_domain %>,<%= css4_domain %></hosts>
+                                        <port>9160</port>
+                                        <keySpace>EVENT_INDEX_KS</keySpace>
+                                        <username><%= cassandra_username %></username>
+                                        <password><%= cassandra_password %></password>
+                                        <externalCassandra>true</externalCassandra>
+                                        <replicationFactor><%= css_replication_factor %></replicationFactor>
+                                        <strategyClass><%= strategy_class  %></strategyClass>
+                                        <readConsistencyLevel><%= read_consistency_level %></readConsistencyLevel>
+                                        <writeConsistencyLevel><%= write_consistency_level %></writeConsistencyLevel>
+                                        <gcGraceInterval><%= gc_grace_interval %></gcGraceInterval>
+                                </configuration>
+                        </definition>
+                </datasource>
+
+		<datasource>
+			<name>WSO2BAM_UTIL_DATASOURCE</name>
+			<description>The datasource used for BAM utilities, such as message store etc..</description>
+			<definition type="RDBMS">
+				<configuration>
+                                        <hosts><%= css1_domain %>,<%= css2_domain %>,<%= css3_domain %>,<%= css4_domain %></hosts>
+                                        <port>9160</port>
+                                        <keySpace>BAM_UTIL_KS</keySpace>
+					<username><%= cassandra_username %></username>
+					<password><%= cassandra_password %></password>
+					<externalCassandra>true</externalCassandra>
+                                        <replicationFactor><%= css_replication_factor %></replicationFactor>
+                                        <strategyClass><%= strategy_class  %></strategyClass>
+                                        <readConsistencyLevel><%= read_consistency_level %></readConsistencyLevel>
+                                        <writeConsistencyLevel><%= write_consistency_level %></writeConsistencyLevel>
+                                        <gcGraceInterval><%= gc_grace_interval %></gcGraceInterval>
+				</configuration>
+			</definition>
+		</datasource>
+
+		<!-- The URL configs are loaded from hector-config.xml -->
+		<datasource>
+			<name>WSO2BAM_HIVE_INCREMENTAL_DATASOURCE</name>
+			<definition type="RDBMS">
+				<configuration>
+                                        <hosts><%= css1_domain %>,<%= css2_domain %>,<%= css3_domain %>,<%= css4_domain %></hosts>
+                                        <port>9160</port>
+                                        <keySpace>HIVE_INCREMENTAL_KS</keySpace>
+					<username><%= cassandra_username %></username>
+					<password><%= cassandra_password%></password>
+					<externalCassandra>true</externalCassandra>
+                                        <replicationFactor><%= css_replication_factor %></replicationFactor>
+                                        <strategyClass><%= strategy_class  %></strategyClass>
+                                        <readConsistencyLevel><%= read_consistency_level %></readConsistencyLevel>
+                                        <writeConsistencyLevel><%= write_consistency_level %></writeConsistencyLevel>
+                                        <gcGraceInterval>864000</gcGraceInterval>
+				</configuration>
+			</definition>
+		</datasource>
+		
+	</datasources>
+
+</datasources-configuration>
